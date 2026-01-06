@@ -6,4 +6,7 @@ node_modules
 .DS_Store
 *.sublime-*
 *.code-workspace
+
+# logs
+electron.log
 npm_output.log
