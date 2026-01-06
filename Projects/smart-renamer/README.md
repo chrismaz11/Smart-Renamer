@@ -1,116 +1,181 @@
-# AI Renamer
+# Smart Renamer
 
-A Node.js CLI that uses Ollama and LM Studio models (Llava, Gemma, Llama etc.) to intelligently rename files by their contents.
-
-*Forked from [ozgrozer/ai-renamer](https://github.com/ozgrozer/ai-renamer) - Original creator: [Ozgur Ozer](https://github.com/ozgrozer)*
+Intelligent AI-powered file renamer with context awareness that uses LM Studio to generate meaningful file names based on content and directory context.
 
 ## Features
 
-- **Multi-Provider Support**: Works with Ollama, LM Studio, and OpenAI
-- **Content Analysis**: Analyzes images, videos, documents, and code files
-- **Intelligent Naming**: Generates descriptive names based on actual file content
-- **Multiple Case Styles**: Support for camelCase, kebab-case, snake_case, and more
-- **Video Frame Extraction**: Uses ffmpeg to analyze video content
-- **PDF Support**: Reads and analyzes PDF document content
-- **Configurable**: Persistent configuration saves your preferences
-- **Subdirectory Processing**: Option to include files in subdirectories
+- 🤖 **AI-Powered Naming** - Uses LM Studio for intelligent file renaming
+- 📁 **Context Awareness** - Analyzes directory structure for better naming decisions
+- 🔍 **Content Analysis** - Examines file metadata and content for accurate names
+- 🏷️ **Tag Support** - Adds searchable tags to files
+- 📂 **Auto Organization** - Organizes files into category folders
+- 🛡️ **Safe Mode** - Dry-run option to preview changes
+- 🎯 **Interactive Mode** - Confirm each rename operation
+- ⚡ **Batch Processing** - Processes files efficiently in configurable batches
+- 🎨 **GUI Available** - Electron-based graphical interface
+
+## Supported File Types
+
+- **Images**: JPG, PNG, GIF, BMP, WebP, SVG
+- **Videos**: MP4, AVI, MOV, MKV, WMV, FLV, WebM
+- **Documents**: PDF, DOC, DOCX, TXT, MD, RTF
+- **Code**: JS, TS, PY, Java, CPP, HTML, CSS, JSON, XML
+- **Audio**: MP3, WAV, FLAC, AAC, OGG
+- **Archives**: ZIP, RAR, 7Z, TAR, GZ
+
+## Prerequisites
+
+- Node.js 14+ 
+- [LM Studio](https://lmstudio.ai/) running locally
+- A loaded language model in LM Studio
 
 ## Installation
 
+### Global Installation
 ```bash
-# Install globally
-npm install -g ai-renamer
+npm install -g smart-renamer
+```
 
-# Or run with npx
-npx ai-renamer /path/to/files
+### Local Installation
+```bash
+git clone https://github.com/chrismaz11/Smart-Renamer.git
+cd Smart-Renamer
+npm install
 ```
 
 ## Usage
 
-### Basic Usage
+### Command Line Interface
+
+#### Basic Usage
 ```bash
-ai-renamer /path/to/files
+# Rename files in a directory
+smart-renamer /path/to/files
+
+# Safe mode - preview changes without renaming
+smart-renamer ~/Downloads --dry-run
+
+# Interactive mode - confirm each rename
+smart-renamer ~/Pictures --interactive
 ```
 
-### Provider-Specific Usage
-
-**Ollama (Default)**
+#### Advanced Options
 ```bash
-ai-renamer /path --provider=ollama --model=llava:13b
+smart-renamer <path> [options]
+
+Options:
+  -p, --provider <provider>    AI provider (lm-studio, ollama) [default: lm-studio]
+  -u, --url <url>             LM Studio base URL [default: http://localhost:1234]
+  -m, --model <model>         Model name (auto-detected if not specified)
+  -d, --dry-run               Show what would be renamed without actually renaming
+  -i, --interactive           Interactive mode - confirm each rename
+  -o, --organize              Organize files into category folders
+  -f, --force-rename          Rename even well-named files for better names
+  -t, --add-tags              Add searchable tags to files
+  -b, --batch-size <size>     Process files in batches [default: 20]
 ```
 
-**LM Studio**
+#### Examples
 ```bash
-ai-renamer /path --provider=lm-studio
+# Process downloads folder with preview
+smart-renamer ~/Downloads --dry-run
+
+# Interactive renaming with organization
+smart-renamer ~/Pictures --interactive --organize
+
+# Batch process with custom LM Studio URL
+smart-renamer ./documents --batch-size 10 --url http://localhost:1234
+
+# Force rename well-named files for better names
+smart-renamer ./photos --force-rename --add-tags
 ```
 
-**OpenAI**
+### Graphical User Interface
+
+Launch the Electron GUI:
 ```bash
-ai-renamer /path --provider=openai --api-key=YOUR_API_KEY
-```
-
-### Advanced Options
-
-```bash
-# Custom case style
-ai-renamer /path --case=kebab-case
-
-# Limit filename length
-ai-renamer /path --chars=25
-
-# Include subdirectories
-ai-renamer /path --include-subdirectories=true
-
-# Custom prompt
-ai-renamer /path --custom-prompt="Focus on the main subject"
-
-# Set language
-ai-renamer /path --language=Spanish
+npm run gui
 ```
 
 ## Configuration
 
-Settings are automatically saved to `~/ai-renamer.json` when you use flags. Available options:
+### LM Studio Setup
 
-- `--provider` / `-p`: AI provider (ollama, lm-studio, openai)
-- `--api-key` / `-a`: API key for OpenAI
-- `--base-url` / `-u`: Custom API base URL
-- `--model` / `-m`: Specific model to use
-- `--frames` / `-f`: Max video frames to extract (default: 3)
-- `--case` / `-c`: Output case style
-- `--chars` / `-x`: Max filename characters
-- `--language` / `-l`: Output language
-- `--include-subdirectories` / `-s`: Process subdirectories
-- `--custom-prompt` / `-r`: Additional prompt instructions
+1. Download and install [LM Studio](https://lmstudio.ai/)
+2. Load a language model (recommended: Code Llama, Mistral, or similar)
+3. Start the local server (default: http://localhost:1234)
+4. Ensure the model is loaded and ready
 
-## Case Styles
+### Custom LM Studio Configuration
+```bash
+# Use custom LM Studio URL
+smart-renamer /path/to/files --url http://localhost:8080
 
-Powered by the `change-case` library:
+# Specify model explicitly
+smart-renamer /path/to/files --model "codellama-7b-instruct"
+```
 
-- `camelCase` → twoWords
-- `kebab-case` → two-words  
-- `snake_case` → two_words
-- `PascalCase` → TwoWords
-- `CONSTANT_CASE` → TWO_WORDS
-- And more...
+## How It Works
 
-## Requirements
+1. **File Analysis** - Scans files and extracts metadata
+2. **Context Building** - Analyzes directory structure and existing naming patterns
+3. **AI Processing** - Sends context to LM Studio for intelligent name generation
+4. **Smart Filtering** - Skips already well-named files (unless `--force-rename`)
+5. **Safe Execution** - Renames files with collision detection and backup
 
-- Node.js 16+
-- One of the following AI providers:
-  - [Ollama](https://ollama.com/download) with a vision model
-  - [LM Studio](https://lmstudio.ai/) with a loaded model
-  - OpenAI API key
-- [FFmpeg](https://www.ffmpeg.org/download.html) (for video processing)
+## Development
 
-## Examples
+### Scripts
+```bash
+npm start          # Run the CLI tool
+npm run dev        # Development mode
+npm run gui        # Launch Electron GUI
+npm run build      # Build Electron app
+```
 
-Transform generic filenames into descriptive ones:
-- `IMG_20240106_143022.jpg` → `sunset-mountain-landscape.jpg`
-- `document.pdf` → `quarterly-financial-report.pdf`
-- `video.mp4` → `cooking-tutorial-pasta.mp4`
-- `file.js` → `user-authentication-service.js`
+### Project Structure
+```
+src/
+├── index.js           # CLI entry point
+├── SmartRenamer.js    # Main renaming logic
+├── LMStudioClient.js  # LM Studio API client
+├── FileAnalyzer.js    # File analysis and filtering
+└── ContextBuilder.js  # Directory context analysis
+gui/
+├── main.js           # Electron main process
+└── index.html        # GUI interface
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-GPL-3.0
+MIT License - see LICENSE file for details
+
+## Troubleshooting
+
+### Common Issues
+
+**LM Studio Connection Failed**
+- Ensure LM Studio is running
+- Check the URL (default: http://localhost:1234)
+- Verify a model is loaded
+
+**No Files Processed**
+- Check file types are supported
+- Use `--force-rename` to process well-named files
+- Verify file permissions
+
+**Performance Issues**
+- Reduce `--batch-size` for large directories
+- Ensure adequate system resources for LM Studio
+
+### Support
+
+For issues and feature requests, please open an issue on GitHub.
