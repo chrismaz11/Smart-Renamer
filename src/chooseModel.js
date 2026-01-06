@@ -1,5 +1,54 @@
-const logger = require('./logger')
-const providers = require('./providers')
+const axios = require('axios')
+
+const ollamaApis = async ({ baseURL }) => {
+  try {
+    const apiResult = await axios({
+      data: {},
+      method: 'get',
+      url: `${baseURL}/api/tags`
+    })
+
+    return apiResult.data.models
+  } catch (err) {
+    throw new Error(err?.response?.data?.error || err.message)
+  }
+}
+
+const lmStudioApis = async ({ baseURL }) => {
+  try {
+    const apiResult = await axios({
+      data: {},
+      method: 'get',
+      url: `${baseURL}/v1/models`
+    })
+
+    return apiResult.data.data
+  } catch (err) {
+    throw new Error(err?.response?.data?.error || err.message)
+  }
+}
+
+const listModels = async options => {
+  try {
+    const { provider } = options
+
+    if (provider === 'ollama') {
+      return ollamaApis(options)
+    } else if (provider === 'lm-studio') {
+      return lmStudioApis(options)
+    } else if (provider === 'openai') {
+      return [
+        { name: 'gpt-4o' },
+        { name: 'gpt-4' },
+        { name: 'gpt-3.5-turbo' }
+      ]
+    } else {
+      throw new Error('🔴 No supported provider found')
+    }
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}
 
 const filterModelNames = arr => {
   return arr.map((item) => {
@@ -37,19 +86,12 @@ const chooseModel = ({ models }) => {
 
 module.exports = async options => {
   try {
-    const { provider } = options
-    const providerModule = providers[provider]
-
-    if (!providerModule) {
-      throw new Error('No supported provider found')
-    }
-
-    const _models = await providerModule.listModels(options)
+    const _models = await listModels(options)
     const models = filterModelNames(_models)
-    logger.info(`Available models: ${models.map(m => m.name).join(', ')}`)
+    console.log(`⚪ Available models: ${models.map(m => m.name).join(', ')}`)
 
     const model = await chooseModel({ models })
-    if (!model) throw new Error('No suitable model found')
+    if (!model) throw new Error('🔴 No suitable model found')
 
     return model
   } catch (err) {

@@ -1,46 +1,87 @@
 const fs = require('fs').promises
 
-const logger = require('./logger')
-const chooseModel = require('./chooseModel')
 const processFile = require('./processFile')
+const chooseModel = require('./chooseModel')
 const processDirectory = require('./processDirectory')
 
-module.exports = async (options) => {
+module.exports = async ({
+  inputPath,
+  defaultCase,
+  defaultModel,
+  defaultChars,
+  defaultFrames,
+  defaultApiKey,
+  defaultBaseURL,
+  defaultLanguage,
+  defaultProvider,
+  defaultCustomPrompt,
+  defaultIncludeSubdirectories
+}) => {
   try {
-    logger.info(`Provider: ${options.provider}`)
-    if (options.apiKey) {
-      logger.info('API key: **********')
-    }
-    logger.info(`Base URL: ${options.baseURL}`)
+    const provider = defaultProvider || 'ollama'
+    console.log(`⚪ Provider: ${provider}`)
 
-    const model = options.model || await chooseModel({ baseURL: options.baseURL, provider: options.provider })
-    logger.info(`Model: ${model}`)
-
-    logger.info(`Frames: ${options.frames}`)
-    logger.info(`Case: ${options._case}`)
-    logger.info(`Chars: ${options.chars}`)
-    logger.info(`Language: ${options.language}`)
-    logger.info(`Include subdirectories: ${options.includeSubdirectories}`)
-
-    if (options.customPrompt) {
-      logger.info(`Custom Prompt: ${options.customPrompt}`)
+    const apiKey = defaultApiKey
+    if (apiKey) {
+      console.log('⚪ API key: **********')
     }
 
-    logger.divider()
+    let baseURL = defaultBaseURL
+    if (provider === 'ollama' && !baseURL) {
+      baseURL = 'http://127.0.0.1:11434'
+    } else if (provider === 'lm-studio' && !baseURL) {
+      baseURL = 'http://127.0.0.1:1234'
+    } else if (provider === 'openai' && !baseURL) {
+      baseURL = 'https://api.openai.com'
+    }
+    console.log(`⚪ Base URL: ${baseURL}`)
 
-    const stats = await fs.stat(options.inputPath)
-    const newOptions = {
-      ...options,
-      model
+    const model = defaultModel || await chooseModel({ baseURL, provider })
+    console.log(`⚪ Model: ${model}`)
+
+    const frames = defaultFrames || 3
+    console.log(`⚪ Frames: ${frames}`)
+
+    const _case = defaultCase || 'kebabCase'
+    console.log(`⚪ Case: ${_case}`)
+
+    const chars = defaultChars || 20
+    console.log(`⚪ Chars: ${chars}`)
+
+    const language = defaultLanguage || 'English'
+    console.log(`⚪ Language: ${language}`)
+
+    const includeSubdirectories = defaultIncludeSubdirectories === 'true' || false
+    console.log(`⚪ Include subdirectories: ${includeSubdirectories}`)
+
+    const customPrompt = defaultCustomPrompt || null
+    if (customPrompt) {
+      console.log(`⚪ Custom Prompt: ${customPrompt}`)
+    }
+
+    console.log('--------------------------------------------------')
+
+    const stats = await fs.stat(inputPath)
+    const options = {
+      model,
+      _case,
+      chars,
+      frames,
+      apiKey,
+      baseURL,
+      language,
+      provider,
+      inputPath,
+      includeSubdirectories,
+      customPrompt
     }
 
     if (stats.isDirectory()) {
-      return await processDirectory({ options: newOptions, inputPath: options.inputPath })
+      await processDirectory({ options, inputPath })
     } else if (stats.isFile()) {
-      const result = await processFile({ ...newOptions, filePath: options.inputPath })
-      return result ? [result] : []
+      await processFile({ ...options, filePath: inputPath })
     }
   } catch (err) {
-    logger.error(err.message)
+    console.log(err.message)
   }
 }

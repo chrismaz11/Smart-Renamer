@@ -1,27 +1,27 @@
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
 
-const logger = require('./logger')
+const isImage = require('./isImage')
+const isVideo = require('./isVideo')
+const saveFile = require('./saveFile')
 const getNewName = require('./getNewName')
-const {
-  isImage,
-  isVideo,
-  saveFile,
-  extractFrames,
-  readFileContent,
-  deleteDirectory,
-  isProcessableFile
-} = require('./utils')
+const extractFrames = require('./extractFrames')
+const readFileContent = require('./readFileContent')
+const deleteDirectory = require('./deleteDirectory')
+const isProcessableFile = require('./isProcessableFile')
 
 module.exports = async options => {
   try {
     const { frames, filePath, inputPath } = options
 
+    const fileName = path.basename(filePath)
     const ext = path.extname(filePath).toLowerCase()
     const relativeFilePath = path.relative(inputPath, filePath)
 
+    if (fileName === '.DS_Store') return
+
     if (!isProcessableFile({ filePath })) {
-      logger.warn(`Unsupported file: ${relativeFilePath}`)
+      console.log(`🟡 Unsupported file: ${relativeFilePath}`)
       return
     }
 
@@ -43,7 +43,7 @@ module.exports = async options => {
     } else {
       content = await readFileContent({ filePath })
       if (!content) {
-        logger.error(`No text content: ${relativeFilePath}`)
+        console.log(`🔴 No text content: ${relativeFilePath}`)
         return
       }
     }
@@ -53,14 +53,12 @@ module.exports = async options => {
 
     const newFileName = await saveFile({ ext, newName, filePath })
     const relativeNewFilePath = path.join(path.dirname(relativeFilePath), newFileName)
-    logger.success(`Renamed: ${relativeFilePath} to ${relativeNewFilePath}`)
+    console.log(`🟢 Renamed: ${relativeFilePath} to ${relativeNewFilePath}`)
 
     if (isVideo({ ext }) && framesOutputDir) {
       await deleteDirectory({ folderPath: framesOutputDir })
     }
-
-    return { oldName: relativeFilePath, newName: relativeNewFilePath }
   } catch (err) {
-    logger.error(err.message)
+    console.log(err.message)
   }
 }
