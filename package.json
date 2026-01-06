@@ -2,7 +2,7 @@
   "version": "1.0.24",
   "license": "GPL-3.0",
   "name": "ai-renamer",
-  "main": "./src/index.js",
+  "main": "electron.js",
   "bin": {
     "ai-renamer": "./src/index.js"
   },
@@ -24,11 +24,19 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@tailwindcss/oxide": "^4.1.18",
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "electron": "^39.2.7",
     "jest": "^30.2.0",
-    "standard": "^17.1.0"
+    "postcss-cli": "^11.0.1",
+    "standard": "^17.1.0",
+    "tailwindcss": "^4.1.18"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "start": "electron .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "build:css": "postcss ./public/style.css -o ./public/output.css"
   },
   "keywords": [
     "ai",

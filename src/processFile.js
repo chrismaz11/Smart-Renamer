@@ -58,6 +58,8 @@ module.exports = async options => {
     if (isVideo({ ext }) && framesOutputDir) {
       await deleteDirectory({ folderPath: framesOutputDir })
     }
+
+    return { oldName: relativeFilePath, newName: relativeNewFilePath }
   } catch (err) {
     logger.error(err.message)
   }
