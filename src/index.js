@@ -3,6 +3,7 @@
 const logger = require('./logger')
 const processPath = require('./processPath')
 const configureYargs = require('./configureYargs')
+const getConfig = require('./config')
 
 const main = async () => {
   try {
@@ -14,7 +15,10 @@ const main = async () => {
       process.exit(1)
     }
 
-    await processPath({ inputPath })
+    const config = await getConfig()
+    const options = { ...config, inputPath }
+
+    await processPath(options)
   } catch (err) {
     logger.error(err.message)
   }

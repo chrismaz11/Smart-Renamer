@@ -1,47 +1,44 @@
 const fs = require('fs').promises
 
 const logger = require('./logger')
-const getConfig = require('./config')
 const chooseModel = require('./chooseModel')
 const processFile = require('./processFile')
 const processDirectory = require('./processDirectory')
 
-module.exports = async ({ inputPath }) => {
+module.exports = async (options) => {
   try {
-    const config = await getConfig()
-
-    logger.info(`Provider: ${config.provider}`)
-    if (config.apiKey) {
+    logger.info(`Provider: ${options.provider}`)
+    if (options.apiKey) {
       logger.info('API key: **********')
     }
-    logger.info(`Base URL: ${config.baseURL}`)
+    logger.info(`Base URL: ${options.baseURL}`)
 
-    const model = config.model || await chooseModel({ baseURL: config.baseURL, provider: config.provider })
+    const model = options.model || await chooseModel({ baseURL: options.baseURL, provider: options.provider })
     logger.info(`Model: ${model}`)
 
-    logger.info(`Frames: ${config.frames}`)
-    logger.info(`Case: ${config._case}`)
-    logger.info(`Chars: ${config.chars}`)
-    logger.info(`Language: ${config.language}`)
-    logger.info(`Include subdirectories: ${config.includeSubdirectories}`)
+    logger.info(`Frames: ${options.frames}`)
+    logger.info(`Case: ${options._case}`)
+    logger.info(`Chars: ${options.chars}`)
+    logger.info(`Language: ${options.language}`)
+    logger.info(`Include subdirectories: ${options.includeSubdirectories}`)
 
-    if (config.customPrompt) {
-      logger.info(`Custom Prompt: ${config.customPrompt}`)
+    if (options.customPrompt) {
+      logger.info(`Custom Prompt: ${options.customPrompt}`)
     }
 
     logger.divider()
 
-    const stats = await fs.stat(inputPath)
-    const options = {
-      ...config,
-      model,
-      inputPath
+    const stats = await fs.stat(options.inputPath)
+    const newOptions = {
+      ...options,
+      model
     }
 
     if (stats.isDirectory()) {
-      await processDirectory({ options, inputPath })
+      return await processDirectory({ options: newOptions, inputPath: options.inputPath })
     } else if (stats.isFile()) {
-      await processFile({ ...options, filePath: inputPath })
+      const result = await processFile({ ...newOptions, filePath: options.inputPath })
+      return result ? [result] : []
     }
   } catch (err) {
     logger.error(err.message)
