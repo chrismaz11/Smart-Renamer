@@ -1,79 +1,41 @@
 const fs = require('fs').promises
 
-const processFile = require('./processFile')
+const logger = require('./logger')
+const getConfig = require('./config')
 const chooseModel = require('./chooseModel')
+const processFile = require('./processFile')
 const processDirectory = require('./processDirectory')
 
-module.exports = async ({
-  inputPath,
-  defaultCase,
-  defaultModel,
-  defaultChars,
-  defaultFrames,
-  defaultApiKey,
-  defaultBaseURL,
-  defaultLanguage,
-  defaultProvider,
-  defaultCustomPrompt,
-  defaultIncludeSubdirectories
-}) => {
+module.exports = async ({ inputPath }) => {
   try {
-    const provider = defaultProvider || 'ollama'
-    console.log(`⚪ Provider: ${provider}`)
+    const config = await getConfig()
 
-    const apiKey = defaultApiKey
-    if (apiKey) {
-      console.log('⚪ API key: **********')
+    logger.info(`Provider: ${config.provider}`)
+    if (config.apiKey) {
+      logger.info('API key: **********')
+    }
+    logger.info(`Base URL: ${config.baseURL}`)
+
+    const model = config.model || await chooseModel({ baseURL: config.baseURL, provider: config.provider })
+    logger.info(`Model: ${model}`)
+
+    logger.info(`Frames: ${config.frames}`)
+    logger.info(`Case: ${config._case}`)
+    logger.info(`Chars: ${config.chars}`)
+    logger.info(`Language: ${config.language}`)
+    logger.info(`Include subdirectories: ${config.includeSubdirectories}`)
+
+    if (config.customPrompt) {
+      logger.info(`Custom Prompt: ${config.customPrompt}`)
     }
 
-    let baseURL = defaultBaseURL
-    if (provider === 'ollama' && !baseURL) {
-      baseURL = 'http://127.0.0.1:11434'
-    } else if (provider === 'lm-studio' && !baseURL) {
-      baseURL = 'http://127.0.0.1:1234'
-    } else if (provider === 'openai' && !baseURL) {
-      baseURL = 'https://api.openai.com'
-    }
-    console.log(`⚪ Base URL: ${baseURL}`)
-
-    const model = defaultModel || await chooseModel({ baseURL, provider })
-    console.log(`⚪ Model: ${model}`)
-
-    const frames = defaultFrames || 3
-    console.log(`⚪ Frames: ${frames}`)
-
-    const _case = defaultCase || 'kebabCase'
-    console.log(`⚪ Case: ${_case}`)
-
-    const chars = defaultChars || 20
-    console.log(`⚪ Chars: ${chars}`)
-
-    const language = defaultLanguage || 'English'
-    console.log(`⚪ Language: ${language}`)
-
-    const includeSubdirectories = defaultIncludeSubdirectories === 'true' || false
-    console.log(`⚪ Include subdirectories: ${includeSubdirectories}`)
-
-    const customPrompt = defaultCustomPrompt || null
-    if (customPrompt) {
-      console.log(`⚪ Custom Prompt: ${customPrompt}`)
-    }
-
-    console.log('--------------------------------------------------')
+    logger.divider()
 
     const stats = await fs.stat(inputPath)
     const options = {
+      ...config,
       model,
-      _case,
-      chars,
-      frames,
-      apiKey,
-      baseURL,
-      language,
-      provider,
-      inputPath,
-      includeSubdirectories,
-      customPrompt
+      inputPath
     }
 
     if (stats.isDirectory()) {
@@ -82,6 +44,6 @@ module.exports = async ({
       await processFile({ ...options, filePath: inputPath })
     }
   } catch (err) {
-    console.log(err.message)
+    logger.error(err.message)
   }
 }

@@ -1,21 +1,22 @@
 #!/usr/bin/env node
 
+const logger = require('./logger')
 const processPath = require('./processPath')
 const configureYargs = require('./configureYargs')
 
 const main = async () => {
   try {
-    const { argv, config } = await configureYargs()
+    const { argv } = await configureYargs()
     const [inputPath] = argv._
 
     if (!inputPath) {
-      console.log('🔴 Please provide a file or folder path')
+      logger.error('Please provide a file or folder path')
       process.exit(1)
     }
 
-    await processPath({ ...config, inputPath })
+    await processPath({ inputPath })
   } catch (err) {
-    console.log(err.message)
+    logger.error(err.message)
   }
 }
 

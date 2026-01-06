@@ -1,4 +1,5 @@
-const changeCase = require('./changeCase')
+const logger = require('./logger')
+const { changeCase } = require('./utils')
 const getModelResponse = require('./getModelResponse')
 
 module.exports = async options => {
@@ -41,6 +42,6 @@ module.exports = async options => {
     const filename = await changeCase({ text, _case })
     return filename
   } catch (err) {
-    console.log(`🔴 Model error: ${err.message} (${relativeFilePath})`)
+    logger.error(`Model error: ${err.message} (${relativeFilePath})`)
   }
 }
