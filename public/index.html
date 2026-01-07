@@ -6,46 +6,156 @@
     <link href="output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">AI Renamer</h1>
-        <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-1 bg-white p-4 rounded shadow">
-                <h2 class="text-lg font-bold mb-2">Files</h2>
-                <button id="select-folder" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Select Folder</button>
-                <div id="file-explorer" class="mt-4"></div>
+    <div class="min-h-screen flex">
+        <aside class="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="text-sm text-gray-500 uppercase tracking-wide">File Manager</p>
+                    <h1 class="text-lg font-semibold text-gray-900">AI Renamer</h1>
+                </div>
+                <span class="text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-full px-2 py-1">Pro</span>
             </div>
-            <div class="col-span-1 bg-white p-4 rounded shadow">
-                <h2 class="text-lg font-bold mb-2">Preview</h2>
-                <div id="preview-panel" class="mt-4"></div>
-            </div>
-            <div class="col-span-1 bg-white p-4 rounded shadow">
-                <h2 class="text-lg font-bold mb-2">Settings</h2>
-                <div id="settings-area" class="mt-4">
-                    <div class="mb-4">
-                        <label for="provider" class="block text-sm font-medium text-gray-700">Provider</label>
-                        <select id="provider" name="provider" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option>ollama</option>
-                            <option>lm-studio</option>
-                            <option>openai</option>
-                        </select>
+            <nav class="space-y-1 text-sm">
+                <button class="w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">All files</button>
+                <button class="w-full text-left px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-medium">Rename &amp; Organize</button>
+                <button class="w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Favorites</button>
+                <button class="w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Shared</button>
+                <button class="w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">Deleted</button>
+            </nav>
+            <div class="mt-8">
+                <p class="text-xs uppercase text-gray-400 tracking-wide mb-2">Quick Access</p>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-blue-400"></span>
+                        Documents
                     </div>
-                    <div class="mb-4">
-                        <label for="model" class="block text-sm font-medium text-gray-700">Model</label>
-                        <input type="text" name="model" id="model" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-green-400"></span>
+                        Images
                     </div>
-                    <div class="mb-4">
-                        <label for="case" class="block text-sm font-medium text-gray-700">Case</label>
-                        <select id="case" name="case" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option>camelCase</option>
-                            <option>pascalCase</option>
-                            <option>snakeCase</option>
-                            <option>kebabCase</option>
-                        </select>
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-purple-400"></span>
+                        Projects
                     </div>
                 </div>
             </div>
-        </div>
-        <button id="rename-files" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Rename Files</button>
+            <div class="mt-auto text-xs text-gray-400">v1.0</div>
+        </aside>
+
+        <main class="flex-1 p-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <section class="xl:col-span-2 space-y-6">
+                    <div class="bg-white rounded-xl border border-gray-200 p-6">
+                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center space-y-2">
+                            <p class="text-sm text-gray-500">Drag &amp; drop files here</p>
+                            <p class="text-xs text-gray-400">or click to browse from your computer</p>
+                            <button id="select-folder" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                                Browse Files
+                            </button>
+                            <p class="text-xs text-gray-400">Supported formats: PDF, DOC, JPG, PNG, MP4, ZIP</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-sm font-semibold text-gray-700">Selected Files</h2>
+                            <span id="file-count" class="text-xs text-gray-400">0 files</span>
+                        </div>
+                        <div id="file-list" class="space-y-3 text-sm text-gray-700">
+                            <div class="text-gray-400 italic">No files selected.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-xl border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-semibold text-gray-700">Preview</h2>
+                        <span class="text-xs text-gray-400">Ready</span>
+                    </div>
+                    <div id="preview-panel" class="space-y-4 text-sm text-gray-700">
+                        <div class="text-gray-400 italic">Preview changes will appear here.</div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="flex items-center justify-between mt-6">
+                <div class="flex items-center gap-3">
+                    <button id="rename-files" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700">
+                        Apply Changes
+                    </button>
+                    <button id="organize-files" class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                        Organize Files
+                    </button>
+                    <button class="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                        Undo
+                    </button>
+                </div>
+                <p class="text-xs text-gray-400">Last action: just now</p>
+            </div>
+
+            <section class="bg-white rounded-xl border border-gray-200 p-6 mt-6">
+                <h2 class="text-sm font-semibold text-gray-700 mb-4">Renaming &amp; Organization Rules</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm text-gray-600">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-gray-400">Naming Pattern</p>
+                            <label for="pattern-template" class="block text-sm font-medium text-gray-700">Pattern Template</label>
+                            <input id="pattern-template" type="text" class="mt-1 w-full border border-gray-200 rounded-md px-3 py-2" value="[Date]_[Original Name]_[Counter]">
+                        </div>
+                        <div>
+                            <label for="date-format" class="block text-sm font-medium text-gray-700">Date Format</label>
+                            <select id="date-format" class="mt-1 w-full border border-gray-200 rounded-md px-3 py-2">
+                                <option>YYYY-MM-DD</option>
+                                <option>YYYY/MM/DD</option>
+                                <option>DD-MM-YYYY</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="counter-start" class="block text-sm font-medium text-gray-700">Counter Start</label>
+                            <input id="counter-start" type="number" class="mt-1 w-full border border-gray-200 rounded-md px-3 py-2" value="1">
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-xs uppercase tracking-wide text-gray-400">Organization Rules</p>
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md p-3">
+                            <input type="checkbox" checked class="h-4 w-4 text-blue-600">
+                            Organize by file type
+                        </label>
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md p-3">
+                            <input type="checkbox" checked class="h-4 w-4 text-blue-600">
+                            Organize by date (Year/Month)
+                        </label>
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md p-3">
+                            <input type="checkbox" class="h-4 w-4 text-blue-600">
+                            Organize by file size
+                        </label>
+                        <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md p-3">
+                            <input type="checkbox" class="h-4 w-4 text-blue-600">
+                            Create subfolders automatically
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <div class="sr-only">
+                <label for="provider">Provider</label>
+                <select id="provider" name="provider">
+                    <option>ollama</option>
+                    <option>lm-studio</option>
+                    <option>openai</option>
+                </select>
+                <label for="model">Model</label>
+                <input type="text" name="model" id="model">
+                <label for="case">Case</label>
+                <select id="case" name="case">
+                    <option>camelCase</option>
+                    <option>pascalCase</option>
+                    <option>snakeCase</option>
+                    <option>kebabCase</option>
+                </select>
+            </div>
+        </main>
     </div>
 
     <script src="renderer.js"></script>
