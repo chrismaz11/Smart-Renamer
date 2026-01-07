@@ -100,7 +100,8 @@
                         <div>
                             <p class="text-xs uppercase tracking-wide text-gray-400">Naming Pattern</p>
                             <label for="pattern-template" class="block text-sm font-medium text-gray-700">Pattern Template</label>
-                            <input id="pattern-template" type="text" class="mt-1 w-full border border-gray-200 rounded-md px-3 py-2" value="[Date]_[Original Name]_[Counter]">
+                            <input id="pattern-template" aria-describedby="pattern-help" type="text" class="mt-1 w-full border border-gray-200 rounded-md px-3 py-2" value="[Date]_[Original Name]_[Counter]">
+                            <p id="pattern-help" class="mt-1 text-xs text-gray-500">Available: [Date], [Original Name], [Counter], [Extension], [Size]</p>
                         </div>
                         <div>
                             <label for="date-format" class="block text-sm font-medium text-gray-700">Date Format</label>
