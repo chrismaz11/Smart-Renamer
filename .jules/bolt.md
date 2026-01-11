@@ -1,0 +1,3 @@
+## 2024-05-23 - Serial File Processing Bottleneck
+**Learning:** The application was processing files in a directory sequentially, awaiting each AI response before starting the next. This completely ignores the parallelizable nature of network I/O, leading to linear scaling with the number of files (O(N) * API_Latency).
+**Action:** Implemented a concurrency limiter (`limitConcurrency`) to process files in parallel batches (limit 5). This keeps the event loop busy and significantly improves throughput without overloading the system or API limits. Future file processing tasks should always consider concurrency.
