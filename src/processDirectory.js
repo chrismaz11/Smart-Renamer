@@ -3,23 +3,24 @@ const fs = require('fs').promises
 
 const processFile = require('./processFile')
 
+const { limitConcurrency } = require('./utils')
+
 const processDirectory = async ({ options, inputPath }) => {
   try {
-    const renamedFiles = []
     const files = await fs.readdir(inputPath)
-    for (const file of files) {
+    const processItem = async (file) => {
       const filePath = path.join(inputPath, file)
       const fileStats = await fs.stat(filePath)
       if (fileStats.isFile()) {
-        const renamedFile = await processFile({ ...options, filePath })
-        if (renamedFile) {
-          renamedFiles.push(renamedFile)
-        }
+        return await processFile({ ...options, filePath })
       } else if (fileStats.isDirectory() && options.includeSubdirectories) {
-        const renamedSubFiles = await processDirectory({ options, inputPath: filePath })
-        renamedFiles.push(...renamedSubFiles)
+        return await processDirectory({ options, inputPath: filePath })
       }
     }
+
+    const results = await limitConcurrency(files, 5, processItem)
+    const renamedFiles = results.flat().filter(Boolean)
+
     return renamedFiles
   } catch (err) {
     console.log(err.message)
