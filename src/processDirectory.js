@@ -2,27 +2,28 @@ const path = require('path')
 const fs = require('fs').promises
 
 const processFile = require('./processFile')
+const limitConcurrency = require('./utils/limit-concurrency')
+
+const limit = limitConcurrency(5)
 
 const processDirectory = async ({ options, inputPath }) => {
   try {
-    const renamedFiles = []
     const files = await fs.readdir(inputPath)
-    for (const file of files) {
+    const promises = files.map(async file => {
       const filePath = path.join(inputPath, file)
       const fileStats = await fs.stat(filePath)
       if (fileStats.isFile()) {
-        const renamedFile = await processFile({ ...options, filePath })
-        if (renamedFile) {
-          renamedFiles.push(renamedFile)
-        }
+        return limit(processFile, { ...options, filePath })
       } else if (fileStats.isDirectory() && options.includeSubdirectories) {
-        const renamedSubFiles = await processDirectory({ options, inputPath: filePath })
-        renamedFiles.push(...renamedSubFiles)
+        return processDirectory({ options, inputPath: filePath })
       }
-    }
-    return renamedFiles
+    })
+
+    const results = await Promise.all(promises)
+    return results.flat().filter(Boolean)
   } catch (err) {
     console.log(err.message)
+    return []
   }
 }
 
