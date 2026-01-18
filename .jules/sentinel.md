@@ -1,0 +1,4 @@
+## 2024-05-22 - [DOM-based XSS in Electron Renderer]
+**Vulnerability:** The renderer process was vulnerable to DOM-based XSS because filenames (user input) were injected directly into `innerHTML` without sanitization. An attacker could craft a file with a name like `<img src=x onerror=alert(1)>` to execute arbitrary JavaScript in the context of the renderer.
+**Learning:** Even in Electron apps (Desktop), DOM-based XSS is a risk if the renderer displays filesystem data that can be manipulated by an attacker. This is especially dangerous in Electron because XSS can lead to RCE via `ipcRenderer` or `remote` module if enabled/exposed.
+**Prevention:** Always sanitize user-controlled data before using it in `innerHTML`. Use `textContent` where possible, or a dedicated HTML escaping function if `innerHTML` is necessary (e.g. for complex layouts).
