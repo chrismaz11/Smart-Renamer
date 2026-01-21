@@ -2,27 +2,30 @@ const path = require('path')
 const fs = require('fs').promises
 
 const processFile = require('./processFile')
+const { limitConcurrency } = require('./utils')
 
 const processDirectory = async ({ options, inputPath }) => {
   try {
-    const renamedFiles = []
-    const files = await fs.readdir(inputPath)
-    for (const file of files) {
-      const filePath = path.join(inputPath, file)
-      const fileStats = await fs.stat(filePath)
-      if (fileStats.isFile()) {
-        const renamedFile = await processFile({ ...options, filePath })
-        if (renamedFile) {
-          renamedFiles.push(renamedFile)
-        }
-      } else if (fileStats.isDirectory() && options.includeSubdirectories) {
-        const renamedSubFiles = await processDirectory({ options, inputPath: filePath })
-        renamedFiles.push(...renamedSubFiles)
+    const limit = limitConcurrency(5)
+    const files = await fs.readdir(inputPath, { withFileTypes: true })
+    const promises = files.map(file => {
+      const filePath = path.join(inputPath, file.name)
+      if (file.isFile()) {
+        return limit(() => processFile({ ...options, filePath }))
+      } else if (file.isDirectory() && options.includeSubdirectories) {
+        return limit(async () => {
+          const result = await processDirectory({ options, inputPath: filePath })
+          return result || []
+        })
       }
-    }
-    return renamedFiles
+      return Promise.resolve()
+    })
+
+    const results = await Promise.all(promises)
+    return results.flat().filter(Boolean)
   } catch (err) {
     console.log(err.message)
+    return []
   }
 }
 
