@@ -5,7 +5,7 @@ const fs = require('fs').promises
 const getConfig = require('./src/config')
 const processPath = require('./src/processPath')
 
-app.commandLine.appendSwitch('remote-debugging-port', '0');
+app.commandLine.appendSwitch('remote-debugging-port', '0')
 
 function createWindow () {
   const win = new BrowserWindow({
@@ -20,8 +20,8 @@ function createWindow () {
 }
 
 app.whenReady().then(async () => {
-  const port = app.commandLine.getSwitchValue('remote-debugging-port');
-  console.log('Remote debugging port:', port);
+  const port = app.commandLine.getSwitchValue('remote-debugging-port')
+  console.log('Remote debugging port:', port)
   createWindow()
 
   app.on('activate', () => {
