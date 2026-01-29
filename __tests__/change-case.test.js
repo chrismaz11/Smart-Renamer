@@ -1,3 +1,4 @@
+/* eslint-env jest */
 const changeCase = require('../src/utils/change-case')
 
 describe('changeCase', () => {
