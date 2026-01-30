@@ -2,7 +2,7 @@ const path = require('path')
 const pdf = require('pdf-parse')
 const fs = require('fs').promises
 
-module.exports = async ({ filePath }) => {
+module.exports = async ({ filePath, maxLength }) => {
   try {
     const ext = path.extname(filePath).toLowerCase()
 
@@ -12,7 +12,18 @@ module.exports = async ({ filePath }) => {
       const pdfData = await pdf(dataBuffer)
       content = pdfData.text.trim()
     } else {
-      content = fs.readFile(filePath, 'utf8')
+      if (maxLength && maxLength > 0) {
+        const fileHandle = await fs.open(filePath, 'r')
+        try {
+          const buffer = Buffer.alloc(maxLength)
+          const { bytesRead } = await fileHandle.read(buffer, 0, maxLength, 0)
+          content = buffer.toString('utf8', 0, bytesRead)
+        } finally {
+          await fileHandle.close()
+        }
+      } else {
+        content = await fs.readFile(filePath, 'utf8')
+      }
     }
 
     return content
