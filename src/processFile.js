@@ -41,7 +41,7 @@ module.exports = async options => {
       images = _extractedFrames.images
       videoPrompt = _extractedFrames.videoPrompt
     } else {
-      content = await readFileContent({ filePath })
+      content = await readFileContent({ filePath, maxLength: 20000 })
       if (!content) {
         logger.error(`No text content: ${relativeFilePath}`)
         return
