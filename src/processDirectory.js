@@ -6,18 +6,33 @@ const processFile = require('./processFile')
 const processDirectory = async ({ options, inputPath }) => {
   try {
     const renamedFiles = []
-    const files = await fs.readdir(inputPath)
-    for (const file of files) {
-      const filePath = path.join(inputPath, file)
-      const fileStats = await fs.stat(filePath)
-      if (fileStats.isFile()) {
+    const entries = await fs.readdir(inputPath, { withFileTypes: true })
+    for (const entry of entries) {
+      const filePath = path.join(inputPath, entry.name)
+
+      let isFile = entry.isFile()
+      let isDirectory = entry.isDirectory()
+
+      if (entry.isSymbolicLink()) {
+        try {
+          const fileStats = await fs.stat(filePath)
+          isFile = fileStats.isFile()
+          isDirectory = fileStats.isDirectory()
+        } catch (error) {
+          continue
+        }
+      }
+
+      if (isFile) {
         const renamedFile = await processFile({ ...options, filePath })
         if (renamedFile) {
           renamedFiles.push(renamedFile)
         }
-      } else if (fileStats.isDirectory() && options.includeSubdirectories) {
+      } else if (isDirectory && options.includeSubdirectories) {
         const renamedSubFiles = await processDirectory({ options, inputPath: filePath })
-        renamedFiles.push(...renamedSubFiles)
+        if (renamedSubFiles) {
+          renamedFiles.push(...renamedSubFiles)
+        }
       }
     }
     return renamedFiles
