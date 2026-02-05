@@ -1,10 +1,10 @@
 const path = require('path')
 const fs = require('fs').promises
-const { exec } = require('child_process')
+const { execFile } = require('child_process')
 
 const getVideoDuration = ({ inputFile }) => {
   return new Promise((resolve, reject) => {
-    exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${inputFile}"`, (err, stdout) => {
+    execFile('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', inputFile], (err, stdout) => {
       if (err) {
         reject(new Error(err))
         return
@@ -23,10 +23,15 @@ module.exports = async ({ frames, inputFile, framesOutputDir }) => {
     const frameRate = numFrames / duration
     const frameInterval = duration / numFrames
 
-    const command = `ffmpeg -i "${inputFile}" -vf fps=${frameRate} -frames:v ${numFrames} -q:v 2 "${framesOutputDir}/frame_%03d.jpg" -loglevel error`
-
     await new Promise((resolve, reject) => {
-      exec(command, (error) => {
+      execFile('ffmpeg', [
+        '-i', inputFile,
+        '-vf', `fps=${frameRate}`,
+        '-frames:v', String(numFrames),
+        '-q:v', '2',
+        `${framesOutputDir}/frame_%03d.jpg`,
+        '-loglevel', 'error'
+      ], (error) => {
         if (error) {
           reject(new Error(`Error extracting frames: ${error.message}`))
           return
